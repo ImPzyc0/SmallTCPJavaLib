@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="TCPapiTestClient:jar">
+    <output-path>$USER_HOME$/JavaOutputs</output-path>
+    <root id="archive" name="TCPapiTestClient.jar">
+      <element id="module-output" name="TCPapiTestClient" />
+    </root>
+  </artifact>
+</component>
