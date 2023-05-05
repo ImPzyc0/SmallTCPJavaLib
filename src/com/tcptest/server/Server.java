@@ -17,6 +17,8 @@ public class Server {
 
     private Thread thread;
 
+    int clientCounter = 0;
+
     private final HashMap<Integer, Client> clients = new HashMap<>();
     private final HashMap<Integer, ReceiveDataServer> packets = new HashMap<>();
 
@@ -62,15 +64,15 @@ public class Server {
                 }catch (SocketException x){
                     break;
                 }
-                int id = clients.size()+1;
                 System.out.println("New Client: "+client.getLocalSocketAddress());
                 Socket finalClient = client;
-                clients.put(id, new Client(client, new Thread(() -> {
+                clientCounter++;
+                clients.put(clientCounter, new Client(client, new Thread(() -> {
                     while(true){
                         try{
                             DataInputStream input = new DataInputStream(finalClient.getInputStream());
                             if(input.available() == 0) continue;
-                            packets.get(input.readInt()).processData(input, id, getServer());
+                            packets.get(input.readInt()).processData(input, clientCounter, getServer());
 
                             Thread.sleep(1000/ticks);
                         } catch (InterruptedException  | IOException e) {
@@ -86,6 +88,7 @@ public class Server {
 
     public void removeClient(int client){
         clients.get(client).stopThread();
+        clients.remove(client);
     }
 
     public void stopServer(){
