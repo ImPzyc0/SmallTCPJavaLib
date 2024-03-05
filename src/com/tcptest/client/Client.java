@@ -38,7 +38,6 @@ public class Client {
                 try {
                     DataInputStream stream = new DataInputStream(server.getInputStream());
                     if(stream.available()== 0) continue;
-
                     this.packets.get(stream.readInt()).processData(stream, this);
 
                     Thread.sleep(1000/ticks);

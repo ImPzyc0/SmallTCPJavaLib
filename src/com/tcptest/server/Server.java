@@ -6,9 +6,29 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+
+class Client {
+
+    private final Thread thread;
+    private final Socket socket;
+
+    public Client(Socket socket, Thread thread){
+        this.socket = socket;
+        this.thread = thread;
+
+        thread.start();
+    }
+
+    public void stopThread(){
+        if(thread.isAlive()) thread.interrupt();
+    }
+
+    public Socket getSocket(){
+        return socket;
+    }
+}
+
 
 public class Server {
 
@@ -42,7 +62,6 @@ public class Server {
         this.thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                System.out.println("started!");
                 acceptClients();
             }
         });
@@ -55,6 +74,7 @@ public class Server {
     private Server getServer(){
         return this;
     }
+
     public void acceptClients(){
         while(true){
             try {
@@ -64,9 +84,9 @@ public class Server {
                 }catch (SocketException x){
                     break;
                 }
-                System.out.println("New Client: "+client.getLocalSocketAddress());
                 Socket finalClient = client;
                 clientCounter++;
+                System.out.println("New Client: "+client.getLocalSocketAddress()+ " ID: "+clientCounter);
                 clients.put(clientCounter, new Client(client, new Thread(() -> {
                     while(true){
                         try{
@@ -74,8 +94,13 @@ public class Server {
                             if(input.available() == 0) continue;
                             packets.get(input.readInt()).processData(input, clientCounter, getServer());
 
-                            Thread.sleep(1000/ticks);
-                        } catch (InterruptedException  | IOException e) {
+                            try{
+                                Thread.sleep(1000/ticks);
+                            }catch(InterruptedException x){
+                                //Thread wurde extern gestoptt (client entfernt)
+
+                            }
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
@@ -249,8 +274,7 @@ public class Server {
         }
     }
 
-
-    public HashMap<Integer, Client> getClients() {
+    private HashMap<Integer, Client> getClients() {
         return clients;
     }
 
